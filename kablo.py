@@ -1,8 +1,6 @@
 import requests
 import json
 import gzip
-import datetime
-
 from io import BytesIO
 
 def get_canli_tv_m3u():
@@ -18,11 +16,10 @@ def get_canli_tv_m3u():
         "Accept-Encoding": "gzip",
         "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbnYiOiJMSVZFIiwiaXBiIjoiMCIsImNnZCI6IjA5M2Q3MjBhLTUwMmMtNDFlZC1hODBmLTJiODE2OTg0ZmI5NSIsImNzaCI6IlRSS1NUIiwiZGN0IjoiM0VGNzUiLCJkaSI6IjVmZGI3NmEyLWE2ODgtNGU4My04YjZiLWQ0MjMxNjJjMjMzOCIsInNnZCI6IjAzNjg0ZWNkLTJkZTctNGJiYS1iZmE4LWUyMzQ2NjBjYTBjYSIsInNwZ2QiOiI2NTdlOWU3YS0xOWFjLTQ3NjEtOGE2MS0wOGU3MGI5ZmExNDUiLCJpY2giOiIwIiwiaWRtIjoiMCIsImlhIjoiOjpmZmZmOjEwMC42NC4wLjQiLCJhcHYiOiIxLjAuMCIsImFibiI6IjEwMDAiLCJuYmYiOjE3NTkwOTU0MDgsImV4cCI6MTc1OTA5NTQ2OCwiaWF0IjoxNzU5MDk1NDA4fQ.zrxoeVbo3E80LTmm97nxX6O2Rnz_gZqO9Aud27PV3-8"  # Güvenlik için normalde token burada gösterilmemeli
     }
-  
+    
     try:
         print("📡 CanliTV API'den veri alınıyor...")
-        with open("testlog.txt", "a", encoding="utf-8") as f:
-            f.write("TEST LOG - {}\n".format(datetime.datetime.now()))
+        
         response = requests.get(url, headers=headers, timeout=30)
         response.raise_for_status()
         
@@ -41,7 +38,7 @@ def get_canli_tv_m3u():
         channels = data['Data']['AllChannels']
         print(f"✅ {len(channels)} kanal bulundu.")
         
-        with open("repom3498.m3u", "w", encoding="utf-8") as f:
+        with open("kablo.m3u", "w", encoding="utf-8") as f:
             f.write("#EXTM3U\n")
             
             kanal_sayisi = 0

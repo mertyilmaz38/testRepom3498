@@ -1,4 +1,4 @@
-name: Kablo Kontrol
+ame: Kablo Kontrol
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
@@ -32,7 +32,12 @@ jobs:
           pip install -U setuptools wheel Kekik httpx parsel requests
 
       - name: API'den M3U Listesini Al
-        run: python repom3498.py  
+        run: python Pythonlar/kablo.py  
+
+      - name: M3U Güncellemelerini Yap
+        run: |
+          
+          python Pythonlar/vettel.py
 
       - name: Değişiklik Kontrolü
         id: degisiklik_kontrol
