@@ -24,8 +24,8 @@ jobs:
 
       - name: Git config
         run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
+         git config user.name "github-actions[bot]"
+         git config user.email "74679750+mertyilmaz38@users.noreply.github.com"
 
       - name: Commit and Push if changed
         run: |
