@@ -42,7 +42,7 @@ def generate_m3u():
             )
         
         # Dosyaya yaz
-        with open("kablo_tv.m3u", "w", encoding="utf-8") as f:
+        with open("kablo.m3u", "w", encoding="utf-8") as f:
             f.write("\n".join(m3u_lines))
         
         print("✅ M3U başarıyla oluşturuldu!")
