@@ -1,49 +1,39 @@
-name: Kablo Kontrol
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
-  cancel-in-progress: true
+name: Update Kablo TV
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 */2 * * *'  # Her 2 saatte bir çalışır
+    - cron: '0 */6 * * *'  # 6 SAATTE BİR (UTC)
 
 jobs:
-  KabloGuncelle:
+  update:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    permissions:
-      contents: write
-
     steps:
-      - name: Depoyu Klonla
-        uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v4
 
-      - name: Python 3.11.8 Yükle
-        uses: actions/setup-python@v5.3.0
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.11.8
+          python-version: '3.10'
 
-      - name: Gereksinimleri Kur
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Generate M3U
+        run: python kablo.py
+
+      - name: Git config
         run: |
-          python -m pip install --upgrade pip
-          pip install -U setuptools wheel Kekik httpx parsel requests
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
 
-      - name: API'den M3U Listesini Al
-        run: python kablo.py  
-
-      - name: Değişiklik Kontrolü
-        id: degisiklik_kontrol
+      - name: Commit and Push if changed
         run: |
-          git diff --quiet . || echo "degisiklik=true" >> $GITHUB_OUTPUT
-
-      - name: Değişiklikleri Commit Et
-        if: steps.degisiklik_kontrol.outputs.degisiklik == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "74679750+mertyilmaz38@users.noreply.github.com"
-          git add .
-          git commit -m "📡 Kablo ve M3U güncellemesi yapıldı" -m "🕒 Otomatik işlem - $GITHUB_SHA"
-          git push
+          git add kablo_tv.m3u
+          # Eğer değişiklik varsa commit yap
+          if ! git diff --cached --quiet; then
+            git commit -m "Auto-update [$(date -u +'%d.%m.%Y %H:%M UTC')]"
+            git push
+          else
+            echo "No changes detected, skipping commit."
+          fi
