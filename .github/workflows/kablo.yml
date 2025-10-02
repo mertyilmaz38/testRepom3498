@@ -29,7 +29,7 @@ jobs:
 
       - name: Commit and Push if changed
         run: |
-          git add kablo_tv.m3u
+          git add kablo.m3u
           # Eğer değişiklik varsa commit yap
           if ! git diff --cached --quiet; then
             git commit -m "Auto-update [$(date -u +'%d.%m.%Y %H:%M UTC')]"
