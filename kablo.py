@@ -1,79 +1,66 @@
-import requests
+import httpx
 import json
 import gzip
 from io import BytesIO
 
 def get_canli_tv_m3u():
-    """"""
-    
     url = "https://core-api.kablowebtv.com/api/channels"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36",
         "Referer": "https://tvheryerde.com",
         "Origin": "https://tvheryerde.com",
-        "Cache-Control": "max-age=0",
-        "Connection": "keep-alive",
         "Accept-Encoding": "gzip",
         "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbnYiOiJMSVZFIiwiaXBiIjoiMCIsImNnZCI6IjA5M2Q3MjBhLTUwMmMtNDFlZC1hODBmLTJiODE2OTg0ZmI5NSIsImNzaCI6IlRSS1NUIiwiZGN0IjoiM0VGNzUiLCJkaSI6IjVmZGI3NmEyLWE2ODgtNGU4My04YjZiLWQ0MjMxNjJjMjMzOCIsInNnZCI6IjAzNjg0ZWNkLTJkZTctNGJiYS1iZmE4LWUyMzQ2NjBjYTBjYSIsInNwZ2QiOiI2NTdlOWU3YS0xOWFjLTQ3NjEtOGE2MS0wOGU3MGI5ZmExNDUiLCJpY2giOiIwIiwiaWRtIjoiMCIsImlhIjoiOjpmZmZmOjEwMC42NC4wLjQiLCJhcHYiOiIxLjAuMCIsImFibiI6IjEwMDAiLCJuYmYiOjE3NTkwOTU0MDgsImV4cCI6MTc1OTA5NTQ2OCwiaWF0IjoxNzU5MDk1NDA4fQ.zrxoeVbo3E80LTmm97nxX6O2Rnz_gZqO9Aud27PV3-8"
     }
-    
+
     try:
         print("📡 CanliTV API'den veri alınıyor...")
-        
-        response = requests.get(url, headers=headers, timeout=30)
+
+        response = httpx.get(url, headers=headers, timeout=30)
         response.raise_for_status()
 
         try:
             with gzip.GzipFile(fileobj=BytesIO(response.content)) as gz:
                 content = gz.read().decode('utf-8')
         except:
-            content = response.content.decode('utf-8')
+            content = response.text
 
-        # 🔍 API yanıtını dosyaya yaz
+        # Yanıtı test için kaydet
         with open("api_raw.json", "w", encoding="utf-8") as raw:
             raw.write(content)
-        
+
         data = json.loads(content)
-        
+
         if not data.get('IsSucceeded') or not data.get('Data', {}).get('AllChannels'):
-            print("❌ CanliTV API'den geçerli veri alınamadı!")
+            print("❌ API'den geçerli veri alınamadı!")
             return False
-        
+
         channels = data['Data']['AllChannels']
         print(f"✅ {len(channels)} kanal bulundu")
-        
+
         with open("kablo.m3u", "w", encoding="utf-8") as f:
             f.write("#EXTM3U\n")
-            
-            kanal_sayisi = 0
-            kanal_index = 1  
-            
+            kanal_index = 1
+
             for channel in channels:
                 name = channel.get('Name')
                 stream_data = channel.get('StreamData', {})
                 hls_url = stream_data.get('HlsStreamUrl') if stream_data else None
                 logo = channel.get('PrimaryLogoImageUrl', '')
                 categories = channel.get('Categories', [])
-                
-                if not name or not hls_url:
-                    continue
-                
                 group = categories[0].get('Name', 'Genel') if categories else 'Genel'
-                
-                if group == "Bilgilendirme":
+
+                if not name or not hls_url or group == "Bilgilendirme":
                     continue
 
                 tvg_id = str(kanal_index)
-
                 f.write(f'#EXTINF:-1 tvg-id="{tvg_id}" tvg-logo="{logo}" group-title="{group}",{name}\n')
                 f.write(f'{hls_url}\n')
+                kanal_index += 1
 
-                kanal_sayisi += 1
-                kanal_index += 1  
-        
-        print(f"📺 kablo.m3u dosyası oluşturuldu! ({kanal_sayisi} kanal)")
+        print(f"📺 kablo.m3u dosyası oluşturuldu! ({kanal_index - 1} kanal)")
         return True
-        
+
     except Exception as e:
         print(f"❌ Hata: {e}")
         return False
