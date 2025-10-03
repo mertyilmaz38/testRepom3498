@@ -25,13 +25,13 @@ def get_canli_tv_m3u():
 
         try:
             with gzip.GzipFile(fileobj=BytesIO(response.content)) as gz:
-            content = gz.read().decode('utf-8')
+                content = gz.read().decode('utf-8')
         except:
             content = response.content.decode('utf-8')
 
         # 🔍 API yanıtını dosyaya yaz
         with open("api_raw.json", "w", encoding="utf-8") as raw:
-        raw.write(content)
+            raw.write(content)
         
         data = json.loads(content)
         
