@@ -23,6 +23,10 @@ def get_canli_tv_m3u():
         response = requests.get(url, headers=headers, timeout=30)
         response.raise_for_status()
         
+        # 🔍 API yanıtını test etmek için dosyaya yaz
+        with open("api_raw.json", "w", encoding="utf-8") as raw:
+        raw.write(response.content.decode('utf-8'))
+        
         try:
             with gzip.GzipFile(fileobj=BytesIO(response.content)) as gz:
                 content = gz.read().decode('utf-8')
