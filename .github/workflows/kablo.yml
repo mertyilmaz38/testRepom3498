@@ -1,39 +1,50 @@
-name: Update Kablo TV
+name: Kablo Liste Güncelleme
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 */2 * * *'  # 6 SAATTE BİR (UTC)
+    - cron: '0 */3 * * *'  # Her 3 saatte bir çalışır
 
 jobs:
-  update:
+  KabloGuncelle:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: write
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Depoyu Klonla
+        uses: actions/checkout@v4.2.2
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Python 3.11.8 Yükle
+        uses: actions/setup-python@v5.3.0
         with:
-          python-version: '3.10'
+          python-version: 3.11.8
 
-      - name: Install dependencies
-        run: pip install requests
-
-      - name: Generate M3U
-        run: python kablo.py
-
-      - name: Git config
+      - name: Gereksinimleri Kur
         run: |
-         git config user.name "github-actions[bot]"
-         git config user.email "74679750+mertyilmaz38@users.noreply.github.com"
+          python -m pip install --upgrade pip
+          pip install -U setuptools wheel Kekik httpx parsel requests
 
-      - name: Commit and Push if changed
+      - name: API'den M3U Listesini Al
+        run: python kablo.py  
+
+
+      - name: Değişiklik Kontrolü
+        id: degisiklik_kontrol
         run: |
-          git add kablo.m3u
-          # Eğer değişiklik varsa commit yap
-          if ! git diff --cached --quiet; then
-            git commit -m "Auto-update [$(date -u +'%d.%m.%Y %H:%M UTC')]"
-            git push
-          else
-            echo "No changes detected, skipping commit."
-          fi
+          git diff --quiet . || echo "degisiklik=true" >> $GITHUB_OUTPUT
+
+      - name: Değişiklikleri Commit Et
+        if: steps.degisiklik_kontrol.outputs.degisiklik == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "74679750+mertyilmaz38@users.noreply.github.com"
+          git add .
+          git commit -m "📡 Kablo ve M3U güncellemesi yapıldı" -m "🕒 Otomatik işlem - $GITHUB_SHA"
+          git push
