@@ -25,7 +25,7 @@ def get_canli_tv_m3u():
         except:
             content = response.text
 
-        # Yanıtı test için kaydet
+        # 🔍 API yanıtını test için kaydet
         with open("api_raw.json", "w", encoding="utf-8") as raw:
             raw.write(content)
 
